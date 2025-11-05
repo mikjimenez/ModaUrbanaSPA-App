@@ -41,6 +41,29 @@ android {
 }
 
 dependencies {
+    // ... tus dependencias existentes ...
+
+    // ========================================
+    // NETWORKING - API REST
+    // ========================================
+
+    // OkHttp - Cliente HTTP
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Retrofit - Cliente REST
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // Coroutines (si no las tienes)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // DataStore - Para guardar tokens
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Coil - Para cargar imágenes desde URLs (opcional)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
     // Compose BOM
     implementation(platform("androidx.compose:compose-bom:2024.10.01"))
     implementation("androidx.compose.ui:ui")

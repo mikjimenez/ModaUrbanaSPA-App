@@ -4,10 +4,16 @@ import android.content.Context
 import com.example.modaurbana.app.data.local.AppDatabase
 import com.example.modaurbana.app.data.local.SessionManager
 import com.example.modaurbana.app.data.local.entity.UserEntity
+import com.example.modaurbana.app.data.remote.ApiService
+import com.example.modaurbana.app.data.remote.RetrofitClient
+import com.example.modaurbana.app.data.remote.dto.UserDto
 
 class UserRepository(context: Context) {
     private val userDao = AppDatabase.getDatabase(context).userDao()
     private val sessionManager = SessionManager(context)
+    private val apiService: ApiService = RetrofitClient
+        .create(context)
+        .create(ApiService::class.java)
 
     /**
      * Registra un nuevo usuario
@@ -98,4 +104,18 @@ class UserRepository(context: Context) {
     suspend fun logout() {
         sessionManager.clearSession()
     }
+    suspend fun fetchUser(id: Int = 1): Result<UserDto> {
+        return try {
+            // Llamar a la API (esto puede tardar varios segundos)
+            val user = apiService.getUserById(id)
+
+            // Retornar éxito
+            Result.success(user)
+
+        } catch (e: Exception) {
+            // Si algo falla (sin internet, timeout, etc.)
+            Result.failure(e)
+        }
+    }
+
 }

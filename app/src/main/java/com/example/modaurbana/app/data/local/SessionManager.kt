@@ -17,6 +17,8 @@ class SessionManager(private val context: Context) {
         private val KEY_USER_EMAIL = stringPreferencesKey("user_email")
         private val KEY_USER_NAME = stringPreferencesKey("user_name")
         private val KEY_IS_LOGGED_IN = stringPreferencesKey("is_logged_in")
+        private val Context.dataStore by preferencesDataStore(name = "session_prefs")
+        private val KEY_AUTH_TOKEN = stringPreferencesKey("auth_token")
     }
 
     suspend fun saveUserSession(userId: Int, email: String, name: String) {
@@ -44,4 +46,31 @@ class SessionManager(private val context: Context) {
             preferences.clear()
         }
     }
+    /**
+     * Guarda el token de autenticación
+     */
+    suspend fun saveAuthToken(token: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_AUTH_TOKEN] = token
+        }
+    }
+
+    /**
+     * Recupera el token guardado (o null si no existe)
+     */
+    suspend fun getAuthToken(): String? {
+        return context.dataStore.data
+            .map { preferences -> preferences[KEY_AUTH_TOKEN] }
+            .first()
+    }
+
+    /**
+     * Elimina el token (cerrar sesión)
+     */
+    suspend fun clearAuthToken() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(KEY_AUTH_TOKEN)
+        }
+    }
+
 }
