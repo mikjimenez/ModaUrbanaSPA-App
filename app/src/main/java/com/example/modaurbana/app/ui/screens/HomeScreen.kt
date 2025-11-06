@@ -21,6 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.modaurbana.app.data.local.entity.ProductEntity
 import com.example.modaurbana.app.viewmodel.CartViewModel
 import com.example.modaurbana.app.viewmodel.ProductViewModel
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,8 +191,17 @@ fun ProductCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+            modifier = Modifier.padding(16.dp)){
+            AsyncImage(
+                model = product.imageUrl, // La URL viene de tu ProductEntity
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth() // Ocupa todo el ancho del Card
+                    .height(320.dp) // Define una altura fija para la imagen
+                    .clip(MaterialTheme.shapes.medium), // Redondea las esquinas
+                contentScale = ContentScale.Crop // Asegura que la imagen llene el espacio sin deformarse
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

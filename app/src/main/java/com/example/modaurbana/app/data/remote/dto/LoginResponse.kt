@@ -10,8 +10,8 @@ data class LoginResponse(
     @SerializedName("id")
     val id: Int,
 
-    @SerializedName("username")
-    val username: String,
+    @SerializedName("name")
+    val name: String,
 
     @SerializedName("email")
     val email: String,

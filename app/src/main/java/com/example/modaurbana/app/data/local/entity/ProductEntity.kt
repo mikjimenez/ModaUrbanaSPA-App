@@ -8,7 +8,7 @@ data class ProductEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
-    val category: String, // "Polera", "Pantalón", "Zapatillas"
+    val category: String, // "Polera", "Pantalón", "Zapatillas", "Hoodie"
     val size: String, // "S", "M", "L", "XL"
     val material: String, // "Algodón Reciclado", "Poliéster Orgánico"
     val price: Double,

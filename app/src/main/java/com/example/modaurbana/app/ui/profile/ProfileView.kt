@@ -52,7 +52,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     // ✅ Éxito: mostrar datos
                     _uiState.value.copy(
                         isLoading = false,
-                        userName = user.username,
+                        userName = user.name,
                         userEmail = user.email ?: "Sin email",
                         error = null
                     )
