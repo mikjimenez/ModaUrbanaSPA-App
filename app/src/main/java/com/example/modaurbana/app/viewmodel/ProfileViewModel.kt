@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val user: UserEntity? = null,
+    val email: UserEntity? = null,
     val error: String? = null,
     val successMessage: String? = null
 )
@@ -30,16 +31,22 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
      * Carga el usuario actual
      */
     fun loadUser() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
+        // Indicar que está cargando
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null
+        )
 
         viewModelScope.launch {
             val result = repository.getCurrentUser()
 
+            // Actualizar el estado según el resultado
             _uiState.value = result.fold(
                 onSuccess = { user ->
                     _uiState.value.copy(
                         isLoading = false,
                         user = user,
+                        email = user,
                         error = null
                     )
                 },
