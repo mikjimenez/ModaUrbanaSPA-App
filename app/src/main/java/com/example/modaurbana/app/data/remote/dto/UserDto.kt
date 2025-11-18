@@ -8,13 +8,25 @@ import com.google.gson.annotations.SerializedName
  */
 data class UserDto(
     @SerializedName("id")
-    val id: Int,
+    val id: String,
 
     @SerializedName("name")
     val name: String,
 
     @SerializedName("email")
     val email: String,
+
+    @SerializedName("role")
+    val role: String,
+
+    @SerializedName("telefono")
+    val telefono: String,
+
+    @SerializedName("ubicacion")
+    val ubicacion: String,
+
+    @SerializedName("direccion")
+    val direccion: String,
 
     @SerializedName("image")
     val image: String? = null  // URL de imagen de perfil (opcional)

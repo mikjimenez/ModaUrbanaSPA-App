@@ -109,4 +109,24 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // Testing - JUnit
+    testImplementation("junit:junit:4.13.2")
+
+    // Testing - Coroutines
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // Testing - MockK (mocking framework)
+    testImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
+
+    // Testing - Turbine (para testar StateFlow/Flow)
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+
+    // Testing - Core Testing (para InstantTaskExecutorRule)
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // Android Testing
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
