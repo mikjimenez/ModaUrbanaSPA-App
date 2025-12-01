@@ -8,16 +8,10 @@ import kotlinx.coroutines.flow.Flow
 class CartRepository(context: Context) {
     private val cartDao = AppDatabase.getDatabase(context).cartDao()
 
-    /**
-     * Obtiene todos los items del carrito
-     */
     fun getAllCartItems(): Flow<List<CartItemEntity>> {
         return cartDao.getAllCartItems()
     }
 
-    /**
-     * Obtiene el total del carrito
-     */
     fun getTotalPrice(): Flow<Double?> {
         return cartDao.getTotalPrice()
     }
@@ -65,9 +59,6 @@ class CartRepository(context: Context) {
         }
     }
 
-    /**
-     * Elimina un item del carrito
-     */
     suspend fun removeFromCart(item: CartItemEntity): Result<Unit> {
         return try {
             cartDao.removeFromCart(item)
@@ -77,9 +68,7 @@ class CartRepository(context: Context) {
         }
     }
 
-    /**
-     * Limpia todo el carrito
-     */
+
     suspend fun clearCart(): Result<Unit> {
         return try {
             cartDao.clearCart()

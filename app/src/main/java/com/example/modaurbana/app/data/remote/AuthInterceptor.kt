@@ -5,17 +5,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
-/**
- * AuthInterceptor: Añade automáticamente el token JWT a las peticiones
- *
- * ¿Cuándo se ejecuta?
- * - ANTES de cada petición HTTP
- *
- * ¿Qué hace?
- * 1. Recupera el token del SessionManager
- * 2. Si existe, añade el header: Authorization: Bearer {token}
- * 3. Si no existe, deja la petición sin modificar
- */
+
 class AuthInterceptor(
     private val sessionManager: SessionManager
 ) : Interceptor {

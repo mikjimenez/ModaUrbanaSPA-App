@@ -1,8 +1,8 @@
+
 package com.example.modaurbana.app.data.local
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -12,65 +12,116 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore(name = "session_prefs")
 
 class SessionManager(private val context: Context) {
+
     companion object {
-        private val KEY_USER_ID = intPreferencesKey("user_id")
-        private val KEY_USER_EMAIL = stringPreferencesKey("user_email")
-        private val KEY_USER_NAME = stringPreferencesKey("user_name")
-        private val KEY_IS_LOGGED_IN = stringPreferencesKey("is_logged_in")
-        private val Context.dataStore by preferencesDataStore(name = "session_prefs")
-        private val KEY_AUTH_TOKEN = stringPreferencesKey("auth_token")
+        private val AUTH_TOKEN_KEY = stringPreferencesKey("auth_token")
+        private val USER_ID_KEY = stringPreferencesKey("user_id")
+        private val USER_EMAIL_KEY = stringPreferencesKey("user_email")
+        private val USER_ROLE_KEY = stringPreferencesKey("user_role")
+        private val USER_NAME_KEY = stringPreferencesKey("user_name")
     }
 
-    suspend fun saveUserSession(userId: Int, email: String, name: String) {
+    // ==================== TOKEN ====================
+
+    suspend fun saveAuthToken(token: String) {
         context.dataStore.edit { preferences ->
-            preferences[KEY_USER_ID] = userId
-            preferences[KEY_USER_EMAIL] = email
-            preferences[KEY_USER_NAME] = name
-            preferences[KEY_IS_LOGGED_IN] = "true"
+            preferences[AUTH_TOKEN_KEY] = token
         }
     }
 
-    suspend fun getUserId(): Int? {
-        return context.dataStore.data
-            .map { preferences -> preferences[KEY_USER_ID] }
-            .first()
+    suspend fun getAuthToken(): String? {
+        val preferences = context.dataStore.data.first()
+        return preferences[AUTH_TOKEN_KEY]
     }
 
-    fun isLoggedIn(): Flow<Boolean> {
-        return context.dataStore.data
-            .map { preferences -> preferences[KEY_IS_LOGGED_IN] == "true" }
+    fun getAuthTokenFlow(): Flow<String?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[AUTH_TOKEN_KEY]
+        }
     }
 
-    suspend fun clearSession() {
+    suspend fun clearAuthToken() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(AUTH_TOKEN_KEY)
+        }
+    }
+
+    // ==================== USER DATA ====================
+
+    suspend fun saveUserData(
+        userId: String,
+        email: String,
+        role: String,
+        name: String? = null
+    ) {
+        context.dataStore.edit { preferences ->
+            preferences[USER_ID_KEY] = userId
+            preferences[USER_EMAIL_KEY] = email
+            preferences[USER_ROLE_KEY] = role
+            name?.let { preferences[USER_NAME_KEY] = it }
+        }
+    }
+
+    suspend fun getUserId(): String? {
+        val preferences = context.dataStore.data.first()
+        return preferences[USER_ID_KEY]
+    }
+
+    suspend fun getUserEmail(): String? {
+        val preferences = context.dataStore.data.first()
+        return preferences[USER_EMAIL_KEY]
+    }
+
+    suspend fun getUserRole(): String? {
+        val preferences = context.dataStore.data.first()
+        return preferences[USER_ROLE_KEY]
+    }
+
+    suspend fun getUserName(): String? {
+        val preferences = context.dataStore.data.first()
+        return preferences[USER_NAME_KEY]
+    }
+
+    // ==================== COMPLETE SESSION ====================
+
+    data class UserSession(
+        val token: String?,
+        val userId: String?,
+        val email: String?,
+        val role: String?,
+        val name: String?
+    )
+
+    fun getUserSessionFlow(): Flow<UserSession> {
+        return context.dataStore.data.map { preferences ->
+            UserSession(
+                token = preferences[AUTH_TOKEN_KEY],
+                userId = preferences[USER_ID_KEY],
+                email = preferences[USER_EMAIL_KEY],
+                role = preferences[USER_ROLE_KEY],
+                name = preferences[USER_NAME_KEY]
+            )
+        }
+    }
+
+    suspend fun getUserSession(): UserSession {
+        val preferences = context.dataStore.data.first()
+        return UserSession(
+            token = preferences[AUTH_TOKEN_KEY],
+            userId = preferences[USER_ID_KEY],
+            email = preferences[USER_EMAIL_KEY],
+            role = preferences[USER_ROLE_KEY],
+            name = preferences[USER_NAME_KEY]
+        )
+    }
+
+    suspend fun isLoggedIn(): Boolean {
+        return getAuthToken() != null
+    }
+
+    suspend fun clearAllData() {
         context.dataStore.edit { preferences ->
             preferences.clear()
         }
     }
-    /**
-     * Guarda el token de autenticación
-     */
-    suspend fun saveAuthToken(token: String) {
-        context.dataStore.edit { preferences ->
-            preferences[KEY_AUTH_TOKEN] = token
-        }
-    }
-
-    /**
-     * Recupera el token guardado (o null si no existe)
-     */
-    suspend fun getAuthToken(): String? {
-        return context.dataStore.data
-            .map { preferences -> preferences[KEY_AUTH_TOKEN] }
-            .first()
-    }
-
-    /**
-     * Elimina el token (cerrar sesión)
-     */
-    suspend fun clearAuthToken() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(KEY_AUTH_TOKEN)
-        }
-    }
-
 }

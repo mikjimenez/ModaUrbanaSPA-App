@@ -2,32 +2,24 @@ package com.example.modaurbana.app.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
-/**
- * DTO = Data Transfer Object
- * Este objeto representa los datos que VIAJAN entre tu app y el servidor
- */
-data class UserDto(
-    @SerializedName("id")
+data class User(
+    @SerializedName("_id")
     val id: String,
-
-    @SerializedName("name")
-    val name: String,
-
-    @SerializedName("email")
     val email: String,
-
-    @SerializedName("role")
     val role: String,
+    val avatar: String? = null,
+    val isActive: Boolean,
+    val emailVerified: Boolean,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
+)
 
-    @SerializedName("telefono")
-    val telefono: String,
+data class ProfileResponse(
+    val success: Boolean,
+    val data: User
+)
 
-    @SerializedName("ubicacion")
-    val ubicacion: String,
-
-    @SerializedName("direccion")
-    val direccion: String,
-
-    @SerializedName("image")
-    val image: String? = null  // URL de imagen de perfil (opcional)
+data class UsersResponse(
+    val success: Boolean,
+    val data: List<User>
 )

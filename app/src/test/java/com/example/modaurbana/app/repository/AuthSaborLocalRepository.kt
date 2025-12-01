@@ -82,7 +82,7 @@ class AuthSaborLocalRepository {
             direccion = "Calle Falsa 123"
         )
 
-        val authData = AuthSaborLocalData(
+        val authData = AuthDto(
             user = userDto,
             accessToken = "mock_token_12345"
         )
@@ -126,7 +126,7 @@ class AuthSaborLocalRepository {
         val email = "wrong@example.com"
         val password = "wrongpassword"
 
-        val response = Response.error<ApiResponse<AuthSaborLocalData>>(
+        val response = Response.error<ApiResponse<AuthDto>>(
             401,
             okhttp3.ResponseBody.create(null, "")
         )
@@ -182,7 +182,7 @@ class AuthSaborLocalRepository {
             direccion = null
         )
 
-        val authData = AuthSaborLocalData(
+        val authData = AuthDto(
             user = userDto,
             accessToken = "new_token_12345"
         )
@@ -216,7 +216,7 @@ class AuthSaborLocalRepository {
     @Test
     fun `registro con email duplicado debe retornar Failure`() = runTest {
         // Given
-        val response = Response.error<ApiResponse<AuthSaborLocalData>>(
+        val response = Response.error<ApiResponse<AuthDto>>(
             409,
             okhttp3.ResponseBody.create(null, "")
         )
@@ -255,7 +255,7 @@ class AuthSaborLocalRepository {
             direccion = null
         )
 
-        val authData = AuthSaborLocalData(
+        val authData = AuthDto(
             user = userDto,
             accessToken = "productor_token"
         )
@@ -290,7 +290,7 @@ class AuthSaborLocalRepository {
     @Test
     fun `createProductorUser sin permisos debe retornar Failure`() = runTest {
         // Given - Usuario no ADMIN
-        val response = Response.error<ApiResponse<AuthSaborLocalData>>(
+        val response = Response.error<ApiResponse<AuthDto>>(
             403,
             okhttp3.ResponseBody.create(null, "")
         )
