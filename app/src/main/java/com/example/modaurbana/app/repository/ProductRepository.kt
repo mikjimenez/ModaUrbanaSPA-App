@@ -1,4 +1,4 @@
-package com.example.modaurbana.repository
+package com.example.modaurbana.app.repository
 
 import com.example.modaurbana.app.data.local.SessionManager
 import com.example.modaurbana.app.data.remote.RetrofitClient
