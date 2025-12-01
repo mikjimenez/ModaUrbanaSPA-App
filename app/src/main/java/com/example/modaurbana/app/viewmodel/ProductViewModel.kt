@@ -1,16 +1,16 @@
-package com.example.modaurbana.viewmodel
+package com.example.modaurbana.app.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.modaurbana.app.data.local.SessionManager
 import com.example.modaurbana.app.repository.ProductRepository
+import com.example.modaurbana.app.data.remote.dto.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ProductListViewModel(app: Application) : AndroidViewModel(app) {
-
+class ProductViewModel(app: Application) : AndroidViewModel(app) {
     private val repo = ProductRepository(
         SessionManager(app.applicationContext)
     )
@@ -29,8 +29,15 @@ class ProductListViewModel(app: Application) : AndroidViewModel(app) {
                     isLoading = true,
                     error = null
                 )
+                val productosRaw = repo.getProductos()
 
-                val productos = repo.getProductos()   // ← YA ENVÍA TOKEN
+                val productos: List<ProductoDto> = when (productosRaw) {
+                    is List<*> -> productosRaw.filterIsInstance<ProductoDto>()
+                    null -> emptyList()
+                    else -> {
+                        emptyList()
+                    }
+                }
 
                 _ui.value = _ui.value.copy(
                     isLoading = false,
@@ -61,10 +68,9 @@ class ProductListViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 }
-
 data class ProductListUiState(
     val isLoading: Boolean = false,
-    val productos: List<Producto> = emptyList(),
+    val productos: List<ProductoDto> = emptyList(),
     val error: String? = null,
 
     val tallasDisponibles: List<String> = emptyList(),
@@ -75,7 +81,7 @@ data class ProductListUiState(
     val materialSeleccionado: String? = null,
     val estiloSeleccionado: String? = null
 ) {
-    val productosFiltrados: List<Producto>
+    val productosFiltrados: List<ProductoDto>
         get() = productos.filter { p ->
             (tallaSeleccionada == null || p.talla == tallaSeleccionada) &&
                     (materialSeleccionado == null || p.material == materialSeleccionado) &&

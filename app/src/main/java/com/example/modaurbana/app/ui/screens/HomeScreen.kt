@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.modaurbana.app.data.remote.dto.Producto
+import com.example.modaurbana.app.data.remote.dto.ProductoDto
 import com.example.modaurbana.app.viewmodel.CartViewModel
 import com.example.modaurbana.app.viewmodel.ProductViewModel
 import coil.compose.AsyncImage
@@ -32,6 +32,7 @@ fun HomeScreen(
     cartViewModel: CartViewModel = viewModel()
 ) {
     val productState by productViewModel.uiState.collectAsState()
+
     val cartState by cartViewModel.uiState.collectAsState()
 
     val categories = listOf("Todos", "Polera", "Pantalón", "Zapatilla", "Chaqueta")
@@ -96,7 +97,7 @@ fun HomeScreen(
             ) {
                 items(categories) { category ->
                     FilterChip(
-                        selected = productState.selectedCategoria == category ||
+                        selected = productState == category ||
                                 (category == "Todos" && productState.selectedCategoria == null),
                         onClick = { productViewModel.filterByCategory(category) },
                         label = { Text(category) },

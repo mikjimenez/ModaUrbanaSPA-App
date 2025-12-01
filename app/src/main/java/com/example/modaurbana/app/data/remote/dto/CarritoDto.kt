@@ -3,7 +3,7 @@ package com.example.modaurbana.app.data.remote.dto
 import com.google.gson.annotations.SerializedName
 
 data class CarritoItem(
-    val producto: Producto,
+    val producto: ProductoDto,
     val cantidad: Int,
     val talla: String? = null
 )

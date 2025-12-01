@@ -1,18 +1,20 @@
 package com.example.modaurbana.app.data.remote.dto
 
+import com.example.modaurbana.app.models.Producto
 import com.google.gson.annotations.SerializedName
 
-data class Producto(
+data class ProductoDto(
     @SerializedName("_id")
     val id: String,
     val nombre: String,
     val talla: String? = null,
     val material: String? = null,
     val estilo: String? = null,
+    val descripcion: String? = null,
     val color: String? = null,
     val precio: Double,
     val stock: Int? = null,
-    val categoria: Categoria? = null,
+    val categoria: String? = null,
     val imagen: String? = null,
     val imagenThumbnail: String? = null,
     val createdAt: String? = null,
@@ -55,4 +57,23 @@ data class UpdateProductoRequest(
     val categoria: String? = null,
     val imagen: String? = null,
     val imagenThumbnail: String? = null
+)
+
+/**
+ * Mapeo DTO -> dominio
+ */
+fun ProductoDto.toDomain(): Producto = Producto(
+    id = id,
+    nombre = nombre,
+    descripcion = descripcion,
+    talla = talla,
+    material = material,
+    estilo = estilo,
+    precio = precio,
+    imagen = imagen,
+    imagenThumbnail = imagenThumbnail,
+    categoria = categoria,
+    stock = stock,
+    createdAt = createdAt,
+    updatedAt = updatedAt
 )
