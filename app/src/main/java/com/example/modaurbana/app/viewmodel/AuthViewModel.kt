@@ -3,7 +3,7 @@ package com.example.modaurbana.app.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.modaurbana.app.repository.UserRepository
+import com.example.modaurbana.app.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,15 +18,22 @@ data class AuthUiState(
 )
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = UserRepository(application)
+    private val repository = AuthRepository(application)
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
 
     /**
-     * Registra un nuevo usuario
+     * Registra un nuevo usuario usando la API
      */
-    fun register(email: String, password: String, confirmPassword: String, name: String) {
+    fun register(
+        email: String,
+        password: String,
+        confirmPassword: String,
+        name: String,
+        telefono: String? = null,
+        direccion: String? = null
+    ) {
         // Validaciones
         val emailError = validateEmail(email)
         val passwordError = validatePassword(password)
@@ -43,7 +50,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        // Si las validaciones pasan, proceder con el registro
         _uiState.value = _uiState.value.copy(
             isLoading = true,
             error = null,
@@ -53,7 +59,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         viewModelScope.launch {
-            val result = repository.register(email, password, name)
+            val result = repository.register(
+                nombre = name,
+                email = email,
+                password = password,
+                telefono = telefono,
+                direccion = direccion
+            )
 
             _uiState.value = result.fold(
                 onSuccess = {
@@ -75,10 +87,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Inicia sesión
+     * Inicia sesión usando la API
      */
     fun login(email: String, password: String) {
-        // Validaciones básicas
         if (email.isBlank() || password.isBlank()) {
             _uiState.value = _uiState.value.copy(
                 error = "Por favor completa todos los campos"
@@ -113,22 +124,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Resetea el estado de éxito
-     */
     fun resetSuccess() {
         _uiState.value = _uiState.value.copy(isSuccess = false)
     }
 
-    // ========================================
-    // VALIDACIONES
-    // ========================================
-
+    // Validaciones (sin cambios)
     private fun validateEmail(email: String): String? {
         return when {
             email.isBlank() -> "El email es obligatorio"
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
-                "Email inválido"
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Email inválido"
             else -> null
         }
     }

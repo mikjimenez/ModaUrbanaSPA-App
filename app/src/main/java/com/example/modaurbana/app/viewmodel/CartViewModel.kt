@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.modaurbana.app.data.local.entity.CartItemEntity
-import com.example.modaurbana.app.repository.CartRepository
+import com.example.modaurbana.app.repository.CartRepositoryHybrid
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +18,7 @@ data class CartUiState(
 )
 
 class CartViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = CartRepository(application)
+    private val repository = CartRepositoryHybrid(application)
 
     private val _uiState = MutableStateFlow(CartUiState())
     val uiState: StateFlow<CartUiState> = _uiState

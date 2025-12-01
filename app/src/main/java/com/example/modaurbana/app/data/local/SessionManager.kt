@@ -1,4 +1,3 @@
-
 package com.example.modaurbana.app.data.local
 
 import android.content.Context
@@ -115,13 +114,35 @@ class SessionManager(private val context: Context) {
         )
     }
 
+    /**
+     * Verifica si hay una sesión activa (si existe un token)
+     */
     suspend fun isLoggedIn(): Boolean {
         return getAuthToken() != null
     }
 
+    /**
+     * Retorna Flow para observar cambios en el estado de login
+     */
+    fun isLoggedInFlow(): Flow<Boolean> {
+        return context.dataStore.data.map { preferences ->
+            preferences[AUTH_TOKEN_KEY] != null
+        }
+    }
+
+    /**
+     * Limpia todos los datos de sesión
+     */
     suspend fun clearAllData() {
         context.dataStore.edit { preferences ->
             preferences.clear()
         }
+    }
+
+    /**
+     * Limpia solo la sesión (alias de clearAllData para mantener compatibilidad)
+     */
+    suspend fun clearSession() {
+        clearAllData()
     }
 }
