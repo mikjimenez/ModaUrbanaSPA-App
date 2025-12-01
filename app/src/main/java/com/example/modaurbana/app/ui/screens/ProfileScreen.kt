@@ -1,6 +1,5 @@
 package com.example.modaurbana.app.ui.screens
 
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -39,7 +37,7 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current // ✅ CORREGIDO
+    val context = LocalContext.current
 
     var showImageSourceDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -73,104 +71,9 @@ fun ProfileScreen(
 
     // Cargar datos cuando la pantalla se abre
     LaunchedEffect(Unit) {
-        viewModel.loadUser()  // ⚠️ Cambia el ID según necesites
+        viewModel.loadUser()
     }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        when {
-            // Estado: Cargando
-            uiState.isLoading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
 
-            // Estado: Error
-            uiState.error != null -> {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "❌ Error",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = uiState.error ?: "",
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.loadUser() }) {
-                        Text("Reintentar")
-                    }
-                }
-            }
-
-            // Estado: Datos cargados
-            else -> {
-                Column(
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Perfil de Usuario",
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Nombre
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Nombre",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = uiState.user?.name ?: "Nombre no disponible",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-
-                    // Email
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Email",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = uiState.email?.email ?: "Email no disponible",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(onClick = { viewModel.loadUser() }) {
-                        Text("Refrescar")
-                    }
-                }
-            }
-        }
-    }
     // Mostrar mensajes
     LaunchedEffect(uiState.successMessage) {
         uiState.successMessage?.let {
@@ -214,7 +117,6 @@ fun ProfileScreen(
                     onClick = {
                         showImageSourceDialog = false
                         if (permissionsState.allPermissionsGranted) {
-                            // ✅ CORREGIDO: Crear archivo temporal para la foto
                             val photoFile = File.createTempFile(
                                 "profile_",
                                 ".jpg",
@@ -318,7 +220,6 @@ fun ProfileScreen(
                         .clickable { showImageSourceDialog = true },
                     contentAlignment = Alignment.Center
                 ) {
-
                     val avatarUri = uiState.user?.avatarUri
                     if (avatarUri != null) {
                         AsyncImage(
@@ -359,7 +260,7 @@ fun ProfileScreen(
 
                 // Nombre del usuario
                 Text(
-                    text = uiState.user?.name ?: "Usuario",
+                    text = viewModel.getDisplayName(),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -368,7 +269,7 @@ fun ProfileScreen(
 
                 // Email
                 Text(
-                    text = uiState.user?.email ?: "",
+                    text = viewModel.getDisplayEmail(),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -384,7 +285,7 @@ fun ProfileScreen(
                         ProfileInfoRow(
                             icon = Icons.Default.Email,
                             label = "Email",
-                            value = uiState.user?.email ?: ""
+                            value = viewModel.getDisplayEmail()
                         )
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -392,15 +293,15 @@ fun ProfileScreen(
                         ProfileInfoRow(
                             icon = Icons.Default.Person,
                             label = "Nombre",
-                            value = uiState.user?.name ?: ""
+                            value = viewModel.getDisplayName()
                         )
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
                         ProfileInfoRow(
                             icon = Icons.Default.ShoppingBag,
-                            label = "Cuenta desde",
-                            value = "2024"
+                            label = "Rol",
+                            value = uiState.role ?: "Cliente"
                         )
                     }
                 }

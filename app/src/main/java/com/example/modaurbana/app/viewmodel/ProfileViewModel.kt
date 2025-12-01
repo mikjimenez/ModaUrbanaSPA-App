@@ -3,6 +3,7 @@ package com.example.modaurbana.app.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.modaurbana.app.data.local.AppDatabase
 import com.example.modaurbana.app.data.local.SessionManager
 import com.example.modaurbana.app.data.local.entity.UserEntity
 import com.example.modaurbana.app.data.remote.dto.ClienteProfile
@@ -15,12 +16,13 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val isLoading: Boolean = false,
     // Usuario local (Room)
-    val localUser: UserEntity? = null,
+    val user: UserEntity? = null,
+    // Email desde la sesión
+    val email: com.example.modaurbana.app.data.remote.dto.User? = null,
     // Perfil del cliente desde API
     val clienteProfile: ClienteProfile? = null,
     // Sesión actual
     val userId: String? = null,
-    val email: String? = null,
     val role: String? = null,
     val name: String? = null,
     // Estados
@@ -30,10 +32,10 @@ data class ProfileUiState(
 )
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
-    private val userRepository = UserRepository(application)
     private val authRepository = AuthRepository(application)
     private val clienteProfileRepository = ClienteProfileRepository(application)
     private val sessionManager = SessionManager(application)
+    private val userDao = AppDatabase.getDatabase(application).userDao()
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState
@@ -48,7 +50,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
      * - Sesión actual (DataStore)
      * - Perfil del cliente (API)
      */
-    fun loadUserData() {
+    private fun loadUserData() {
         _uiState.value = _uiState.value.copy(
             isLoading = true,
             error = null
@@ -56,23 +58,40 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
         viewModelScope.launch {
             try {
-                // 1. Cargar usuario local de Room
-                val localUserResult = userRepository.getCurrentUser()
-
-                // 2. Cargar sesión de DataStore
+                // 1. Cargar sesión de DataStore
                 val session = sessionManager.getUserSession()
 
+                // 2. Cargar usuario local de Room (si existe)
+                val localUser = session.userId?.let { userId ->
+                    try {
+                        userDao.getUserById(userId.toIntOrNull() ?: 0)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+
                 // 3. Intentar cargar perfil del cliente desde API
-                val clienteProfileResult = clienteProfileRepository.getMyProfile()
+                val clienteProfileResult = try {
+                    clienteProfileRepository.getMyProfile()
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
+
+                // 4. Intentar cargar datos del usuario desde API
+                val userFromApi = try {
+                    authRepository.getProfile()
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    localUser = localUserResult.getOrNull(),
+                    user = localUser,
+                    email = userFromApi.getOrNull(),
                     clienteProfile = clienteProfileResult.getOrNull(),
                     userId = session.userId,
-                    email = session.email,
                     role = session.role,
-                    name = session.name,
+                    name = session.name ?: clienteProfileResult.getOrNull()?.nombre,
                     error = null
                 )
             } catch (e: Exception) {
@@ -85,30 +104,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * Carga solo el usuario local (Room)
+     * Recarga los datos del usuario
      */
-    fun loadLocalUser() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
-
-        viewModelScope.launch {
-            val result = userRepository.getCurrentUser()
-
-            _uiState.value = result.fold(
-                onSuccess = { user ->
-                    _uiState.value.copy(
-                        isLoading = false,
-                        localUser = user,
-                        error = null
-                    )
-                },
-                onFailure = { exception ->
-                    _uiState.value.copy(
-                        isLoading = false,
-                        error = exception.message
-                    )
-                }
-            )
-        }
+    fun loadUser() {
+        loadUserData()
     }
 
     /**
@@ -185,25 +184,34 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
      * Actualiza la foto de perfil (local)
      */
     fun updateAvatar(avatarUri: String) {
-        val userId = _uiState.value.localUser?.id ?: return
+        val userId = _uiState.value.user?.id ?: return
 
         viewModelScope.launch {
-            val result = userRepository.updateAvatar(userId, avatarUri)
+            try {
+                // Obtener el usuario actual
+                val currentUser = userDao.getUserById(userId)
 
-            result.fold(
-                onSuccess = {
-                    // Recargar usuario local
-                    loadLocalUser()
+                if (currentUser != null) {
+                    // Actualizar con el nuevo avatar
+                    val updatedUser = currentUser.copy(avatarUri = avatarUri)
+                    userDao.updateUser(updatedUser)
+
+                    // Recargar los datos
+                    loadUserData()
+
                     _uiState.value = _uiState.value.copy(
                         successMessage = "Foto actualizada"
                     )
-                },
-                onFailure = { exception ->
+                } else {
                     _uiState.value = _uiState.value.copy(
-                        error = exception.message
+                        error = "Usuario no encontrado"
                     )
                 }
-            )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "Error al actualizar foto: ${e.message}"
+                )
+            }
         }
     }
 
@@ -220,8 +228,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 onSuccess = { user ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
+                        email = user,
                         userId = user.id,
-                        email = user.email,
                         role = user.role,
                         successMessage = "Perfil cargado",
                         error = null
@@ -243,8 +251,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun logout() {
         viewModelScope.launch {
             try {
-                // Limpiar repositorios locales
-                userRepository.logout()
+                // Limpiar sesión
+                sessionManager.clearAllData()
 
                 // Limpiar repositorio de autenticación
                 authRepository.logout()
@@ -292,7 +300,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun getDisplayName(): String {
         return _uiState.value.name
             ?: _uiState.value.clienteProfile?.nombre
-            ?: _uiState.value.localUser?.name
+            ?: _uiState.value.user?.name
             ?: "Usuario"
     }
 
@@ -300,8 +308,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
      * Obtiene el email para mostrar
      */
     fun getDisplayEmail(): String {
-        return _uiState.value.email
-            ?: _uiState.value.localUser?.email
+        return _uiState.value.email?.email
+            ?: _uiState.value.user?.email
             ?: ""
     }
 }
