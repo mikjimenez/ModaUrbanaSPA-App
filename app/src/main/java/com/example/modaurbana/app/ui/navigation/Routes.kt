@@ -1,4 +1,4 @@
-package com.example.modaurbana.ui.navigation
+package com.example.modaurbana.app.ui.navigation
 
 sealed class Route(val route: String) {
     object Login : Route("login")

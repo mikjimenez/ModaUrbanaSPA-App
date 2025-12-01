@@ -4,13 +4,14 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.modaurbana.app.data.local.SessionManager
-import com.example.modaurbana.app.repository.ProductRepository
-import com.example.modaurbana.app.data.remote.dto.*
+import com.example.modaurbana.app.models.Producto
+import com.example.modaurbana.repository.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ProductViewModel(app: Application) : AndroidViewModel(app) {
+
     private val repo = ProductRepository(
         SessionManager(app.applicationContext)
     )
@@ -29,16 +30,8 @@ class ProductViewModel(app: Application) : AndroidViewModel(app) {
                     isLoading = true,
                     error = null
                 )
-                val productosRaw = repo.getProductos()
 
-                val productos: List<ProductoDto> = when (productosRaw) {
-                    is List<*> -> productosRaw.filterIsInstance<ProductoDto>()
-                    null -> emptyList()
-                    else -> {
-                        emptyList()
-                    }
-                }
-
+                val productos = repo.getProductos()
                 _ui.value = _ui.value.copy(
                     isLoading = false,
                     productos = productos,
@@ -68,9 +61,10 @@ class ProductViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 }
+
 data class ProductListUiState(
     val isLoading: Boolean = false,
-    val productos: List<ProductoDto> = emptyList(),
+    val productos: List<Producto> = emptyList(),
     val error: String? = null,
 
     val tallasDisponibles: List<String> = emptyList(),
@@ -81,7 +75,7 @@ data class ProductListUiState(
     val materialSeleccionado: String? = null,
     val estiloSeleccionado: String? = null
 ) {
-    val productosFiltrados: List<ProductoDto>
+    val productosFiltrados: List<Producto>
         get() = productos.filter { p ->
             (tallaSeleccionada == null || p.talla == tallaSeleccionada) &&
                     (materialSeleccionado == null || p.material == materialSeleccionado) &&
