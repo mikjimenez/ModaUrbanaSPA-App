@@ -3,44 +3,63 @@ package com.example.modaurbana.app.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.modaurbana.app.data.local.entity.CartItemEntity
-import com.example.modaurbana.app.repository.CartRepositoryHybrid
+import com.example.modaurbana.app.data.remote.dto.Carrito
+import com.example.modaurbana.app.data.remote.dto.CarritoItem
+import com.example.modaurbana.app.repository.CartRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class CartUiState(
     val isLoading: Boolean = false,
-    val cartItems: List<CartItemEntity> = emptyList(),
-    val totalPrice: Double = 0.0,
+    val carrito: Carrito? = null,
+    val items: List<CarritoItem> = emptyList(),
+    val total: Double = 0.0,
+    val itemCount: Int = 0,
     val error: String? = null,
     val successMessage: String? = null
 )
 
 class CartViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = CartRepositoryHybrid(application)
+    private val repository = CartRepository(application)
 
     private val _uiState = MutableStateFlow(CartUiState())
     val uiState: StateFlow<CartUiState> = _uiState
 
     init {
-        loadCart()
+        loadCarrito()
     }
 
     /**
-     * Carga el carrito
+     * Carga el carrito del usuario
      */
-    private fun loadCart() {
-        viewModelScope.launch {
-            repository.getAllCartItems().collect { items ->
-                _uiState.value = _uiState.value.copy(cartItems = items)
-            }
-        }
+    fun loadCarrito() {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null
+        )
 
         viewModelScope.launch {
-            repository.getTotalPrice().collect { total ->
-                _uiState.value = _uiState.value.copy(totalPrice = total ?: 0.0)
-            }
+            val result = repository.getMyCarrito()
+
+            _uiState.value = result.fold(
+                onSuccess = { carrito ->
+                    _uiState.value.copy(
+                        isLoading = false,
+                        carrito = carrito,
+                        items = carrito.items ?: emptyList(),
+                        total = carrito.total ?: 0.0,
+                        itemCount = carrito.items?.size ?: 0,
+                        error = null
+                    )
+                },
+                onFailure = { exception ->
+                    _uiState.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "Error al cargar carrito"
+                    )
+                }
+            )
         }
     }
 
@@ -48,19 +67,149 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
      * Agrega un producto al carrito
      */
     fun addToCart(
-        productId: Int,
-        productName: String,
-        size: String,
-        price: Double,
-        imageUrl: String?
+        productoId: String,
+        talla: String?,
+        cantidad: Int = 1
     ) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null
+        )
+
         viewModelScope.launch {
-            val result = repository.addToCart(productId, productName, size, price, imageUrl)
+            val result = repository.agregarItemCarrito(
+                productoId = productoId,
+                talla = talla,
+                cantidad = cantidad
+            )
+
+            _uiState.value = result.fold(
+                onSuccess = { carrito ->
+                    _uiState.value.copy(
+                        isLoading = false,
+                        carrito = carrito,
+                        items = carrito.items ?: emptyList(),
+                        total = carrito.total ?: 0.0,
+                        itemCount = carrito.items?.size ?: 0,
+                        successMessage = "Producto agregado al carrito",
+                        error = null
+                    )
+                },
+                onFailure = { exception ->
+                    _uiState.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "Error al agregar al carrito"
+                    )
+                }
+            )
+        }
+    }
+
+    /**
+     * Remueve un item del carrito
+     * Nota: Necesitarás el itemId del backend
+     */
+    fun removeItem(itemId: String) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null
+        )
+
+        viewModelScope.launch {
+            val result = repository.removerItemCarrito(itemId)
 
             result.fold(
-                onSuccess = {
+                onSuccess = { message ->
+                    // Recargar el carrito después de eliminar
+                    loadCarrito()
                     _uiState.value = _uiState.value.copy(
-                        successMessage = "Producto agregado al carrito"
+                        successMessage = "Producto eliminado del carrito"
+                    )
+                },
+                onFailure = { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "Error al eliminar producto"
+                    )
+                }
+            )
+        }
+    }
+
+    /**
+     * Actualiza la cantidad de un producto
+     * (Esto depende de cómo tu API maneje la actualización de cantidades)
+     */
+    fun updateQuantity(productoId: String, talla: String?, newQuantity: Int) {
+        if (newQuantity <= 0) {
+            // Si la cantidad es 0 o menos, podrías remover el item
+            // Necesitarás encontrar el itemId correspondiente
+            return
+        }
+
+        // Agregar el producto nuevamente con la nueva cantidad
+        // (esto podría sumar a la cantidad existente, dependiendo de tu API)
+        addToCart(productoId, talla, newQuantity)
+    }
+
+    /**
+     * Confirma el pedido
+     */
+    fun checkout(
+        direccionEntrega: String,
+        metodoPago: String
+    ) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null
+        )
+
+        viewModelScope.launch {
+            val result = repository.confirmarPedido(
+                direccionEntrega = direccionEntrega,
+                metodoPago = metodoPago
+            )
+
+            _uiState.value = result.fold(
+                onSuccess = { pedido ->
+                    _uiState.value.copy(
+                        isLoading = false,
+                        carrito = null,
+                        items = emptyList(),
+                        total = 0.0,
+                        itemCount = 0,
+                        successMessage = "¡Pedido realizado con éxito! ID: ${pedido.id}",
+                        error = null
+                    )
+                },
+                onFailure = { exception ->
+                    _uiState.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "Error al confirmar pedido"
+                    )
+                }
+            )
+        }
+    }
+
+    /**
+     * Recarga el carrito (pull-to-refresh)
+     */
+    fun refreshCarrito() {
+        loadCarrito()
+    }
+
+    /**
+     * Calcula el total del carrito
+     */
+    fun calcularTotal() {
+        viewModelScope.launch {
+            val result = repository.calcularTotalCarrito()
+
+            result.fold(
+                onSuccess = { total ->
+                    _uiState.value = _uiState.value.copy(
+                        total = total
                     )
                 },
                 onFailure = { exception ->
@@ -73,34 +222,16 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Actualiza la cantidad de un item
+     * Obtiene la cantidad de items en el carrito
      */
-    fun updateQuantity(item: CartItemEntity, newQuantity: Int) {
+    fun getItemCount() {
         viewModelScope.launch {
-            repository.updateQuantity(item, newQuantity)
-        }
-    }
-
-    /**
-     * Elimina un item del carrito
-     */
-    fun removeItem(item: CartItemEntity) {
-        viewModelScope.launch {
-            repository.removeFromCart(item)
-        }
-    }
-
-    /**
-     * Finaliza la compra (limpia el carrito)
-     */
-    fun checkout() {
-        viewModelScope.launch {
-            val result = repository.clearCart()
+            val result = repository.getCartItemCount()
 
             result.fold(
-                onSuccess = {
+                onSuccess = { count ->
                     _uiState.value = _uiState.value.copy(
-                        successMessage = "¡Compra realizada con éxito!"
+                        itemCount = count
                     )
                 },
                 onFailure = { exception ->
@@ -113,7 +244,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Limpia los mensajes
+     * Limpia mensajes de éxito y error
      */
     fun clearMessages() {
         _uiState.value = _uiState.value.copy(

@@ -15,10 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.modaurbana.app.data.local.entity.ProductEntity
+import com.example.modaurbana.app.data.remote.dto.Producto
 import com.example.modaurbana.app.viewmodel.CartViewModel
 import com.example.modaurbana.app.viewmodel.ProductViewModel
 import coil.compose.AsyncImage
@@ -35,9 +34,8 @@ fun HomeScreen(
     val productState by productViewModel.uiState.collectAsState()
     val cartState by cartViewModel.uiState.collectAsState()
 
-    val categories = listOf("Todos", "Polera", "Pantalón", "Zapatillas", "Chaqueta")
+    val categories = listOf("Todos", "Polera", "Pantalón", "Zapatilla", "Chaqueta")
 
-    // Snackbar para mensajes
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(cartState.successMessage) {
@@ -60,12 +58,11 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    // Badge del carrito
                     BadgedBox(
                         badge = {
-                            if (cartState.cartItems.isNotEmpty()) {
+                            if (cartState.itemCount > 0) {
                                 Badge {
-                                    Text("${cartState.cartItems.size}")
+                                    Text("${cartState.itemCount}")
                                 }
                             }
                         }
@@ -99,10 +96,12 @@ fun HomeScreen(
             ) {
                 items(categories) { category ->
                     FilterChip(
-                        selected = productState.selectedCategory == category,
+                        selected = productState.selectedCategoria == category ||
+                                (category == "Todos" && productState.selectedCategoria == null),
                         onClick = { productViewModel.filterByCategory(category) },
                         label = { Text(category) },
-                        leadingIcon = if (productState.selectedCategory == category) {
+                        leadingIcon = if (productState.selectedCategoria == category ||
+                            (category == "Todos" && productState.selectedCategoria == null)) {
                             {
                                 Icon(
                                     Icons.Default.Check,
@@ -123,7 +122,7 @@ fun HomeScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            } else if (productState.products.isEmpty()) {
+            } else if (productState.productos.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -137,10 +136,16 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "No hay productos en esta categoría",
+                            "No hay productos disponibles",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { productViewModel.refreshProductos() }) {
+                            Icon(Icons.Default.Refresh, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Recargar")
+                        }
                     }
                 }
             } else {
@@ -149,18 +154,16 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(
-                        items = productState.products,
+                        items = productState.productos,
                         key = { it.id }
-                    ) { product ->
+                    ) { producto ->
                         ProductCard(
-                            product = product,
+                            producto = producto,
                             onAddToCart = {
                                 cartViewModel.addToCart(
-                                    productId = product.id,
-                                    productName = product.name,
-                                    size = product.size,
-                                    price = product.price,
-                                    imageUrl = product.imageUrl
+                                    productoId = producto.id,
+                                    talla = producto.talla,
+                                    cantidad = 1
                                 )
                             }
                         )
@@ -173,7 +176,7 @@ fun HomeScreen(
 
 @Composable
 fun ProductCard(
-    product: ProductEntity,
+    producto: Producto,
     onAddToCart: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -190,18 +193,21 @@ fun ProductCard(
             .clickable { isExpanded = !isExpanded },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)){
-            AsyncImage(
-                model = product.imageUrl, // La URL viene de tu ProductEntity
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth() // Ocupa todo el ancho del Card
-                    .height(320.dp) // Define una altura fija para la imagen
-                    .clip(MaterialTheme.shapes.medium), // Redondea las esquinas
-                contentScale = ContentScale.Crop // Asegura que la imagen llene el espacio sin deformarse
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Imagen del producto
+            producto.imagen?.let { imageUrl ->
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = producto.nombre,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp)
+                        .clip(MaterialTheme.shapes.medium),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -209,7 +215,7 @@ fun ProductCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = product.name,
+                        text = producto.nombre,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -217,73 +223,94 @@ fun ProductCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        AssistChip(
-                            onClick = { },
-                            label = { Text(product.category) },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Category,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            },
-                            modifier = Modifier.height(28.dp)
-                        )
+                        producto.categoria?.nombre?.let { categoriaNombre ->
+                            AssistChip(
+                                onClick = { },
+                                label = { Text(categoriaNombre) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Category,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                modifier = Modifier.height(28.dp)
+                            )
+                        }
 
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = "Talla: ${product.size}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        producto.talla?.let { talla ->
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Talla: $talla",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "$${String.format("%,.0f", product.price)}",
+                        text = "$${String.format("%,.0f", producto.precio)}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    Text(
-                        text = "Stock: ${product.stock}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (product.stock > 10) MaterialTheme.colorScheme.tertiary
-                        else MaterialTheme.colorScheme.error
-                    )
+                    producto.stock?.let { stock ->
+                        Text(
+                            text = "Stock: $stock",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (stock > 10) MaterialTheme.colorScheme.tertiary
+                            else MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
             AnimatedVisibility(visible = isExpanded) {
                 Column {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Divider()
+                    HorizontalDivider()
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = "Material:",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = product.material,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    producto.material?.let { material ->
+                        Text(
+                            text = "Material:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = material,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    producto.estilo?.let { estilo ->
+                        Text(
+                            text = "Estilo:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = estilo,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
 
-                    Text(
-                        text = "Descripción:",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = product.description,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    producto.color?.let { color ->
+                        Text(
+                            text = "Color:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = color,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
 
@@ -292,11 +319,11 @@ fun ProductCard(
             Button(
                 onClick = onAddToCart,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = product.stock > 0
+                enabled = (producto.stock ?: 0) > 0
             ) {
                 Icon(Icons.Default.AddShoppingCart, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(if (product.stock > 0) "Agregar al Carrito" else "Sin Stock")
+                Text(if ((producto.stock ?: 0) > 0) "Agregar al Carrito" else "Sin Stock")
             }
         }
     }

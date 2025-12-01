@@ -4,10 +4,11 @@ import android.content.Context
 import com.example.modaurbana.app.data.local.SessionManager
 import com.example.modaurbana.app.data.remote.RetrofitClient
 import com.example.modaurbana.app.data.remote.dto.*
-import com.example.modaurbana.app.data.local.entity.UserEntity
+import com.google.firebase.appdistribution.gradle.ApiService
 
 /**
  * Repositorio para manejar autenticación con la API
+ * Trabaja únicamente con DTOs, evite trabajar con Dao o Entity
  */
 class AuthRepository(private val context: Context) {
 
@@ -43,7 +44,7 @@ class AuthRepository(private val context: Context) {
             if (response.isSuccessful && response.body() != null) {
                 val authResponse = response.body()!!
 
-                // Guardar token y datos de usuario
+                // Guardar token y datos de usuario en DataStore
                 sessionManager.saveAuthToken(authResponse.data.accessToken)
                 sessionManager.saveUserData(
                     userId = authResponse.data.user.id,
@@ -52,7 +53,6 @@ class AuthRepository(private val context: Context) {
                     name = nombre
                 )
 
-                // Retornar los datos completos de autenticación
                 Result.success(authResponse.data)
             } else {
                 val errorMessage = when (response.code()) {
@@ -86,7 +86,6 @@ class AuthRepository(private val context: Context) {
                     role = authResponse.data.user.role
                 )
 
-                // Retornar los datos completos de autenticación
                 Result.success(authResponse.data)
             } else {
                 val errorMessage = when (response.code()) {
@@ -110,12 +109,26 @@ class AuthRepository(private val context: Context) {
 
             if (response.isSuccessful && response.body() != null) {
                 val profileResponse = response.body()!!
-                val userDto = profileResponse.data
-
-                // Retornar el User del DTO directamente
-                Result.success(userDto)
+                Result.success(profileResponse.data)
             } else {
                 Result.failure(Exception("Error al obtener perfil"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Error de conexión: ${e.message}"))
+        }
+    }
+
+    /**
+     * Obtiene todos los usuarios (solo ADMIN)
+     */
+    suspend fun getAllUsers(): Result<List<User>> {
+        return try {
+            val response = apiService.getAllUsers()
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!.data)
+            } else {
+                Result.failure(Exception("Error al obtener usuarios"))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Error de conexión: ${e.message}"))
@@ -141,5 +154,12 @@ class AuthRepository(private val context: Context) {
      */
     suspend fun getAuthToken(): String? {
         return sessionManager.getAuthToken()
+    }
+
+    /**
+     * Obtiene la sesión actual del usuario
+     */
+    suspend fun getUserSession(): SessionManager.UserSession {
+        return sessionManager.getUserSession()
     }
 }

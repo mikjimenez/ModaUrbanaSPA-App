@@ -90,6 +90,7 @@ dependencies {
     // Room (base de datos local)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.firebase.appdistribution.gradle)
     ksp("androidx.room:room-compiler:2.6.1")
 
     // Coil (cargar imágenes)

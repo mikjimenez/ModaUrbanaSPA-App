@@ -4,7 +4,6 @@ import android.content.Context
 import com.example.modaurbana.app.data.local.AppDatabase
 import com.example.modaurbana.app.data.local.entity.ProductEntity
 import com.example.modaurbana.app.data.remote.RetrofitClient
-import com.example.modaurbana.app.data.remote.dto.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -12,7 +11,7 @@ import kotlinx.coroutines.flow.first
  * Repositorio híbrido para productos
  * Combina datos locales (Room) y remotos (API)
  */
-class ProductRepositoryHybrid(context: Context) {
+class ProductRepository(context: Context) {
 
     private val productDao = AppDatabase.getDatabase(context).productDao()
     private val apiService = RetrofitClient.ApiService
