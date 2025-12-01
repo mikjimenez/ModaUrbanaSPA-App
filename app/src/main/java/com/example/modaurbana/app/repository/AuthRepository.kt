@@ -4,7 +4,6 @@ import android.content.Context
 import com.example.modaurbana.app.data.local.SessionManager
 import com.example.modaurbana.app.data.remote.RetrofitClient
 import com.example.modaurbana.app.data.remote.dto.*
-import com.google.firebase.appdistribution.gradle.ApiService
 
 /**
  * Repositorio para manejar autenticación con la API

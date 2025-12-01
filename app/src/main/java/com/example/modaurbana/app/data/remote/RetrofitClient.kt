@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
 
-    private const val BASE_URL = "https://modaurbana-api-sw96.onrender.com/api"
+    private const val BASE_URL = "https://modaurbana-api-sw96.onrender.com/api/"
 
     private lateinit var sessionManager: SessionManager
 

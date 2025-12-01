@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.modaurbana.app.data.local.SessionManager
 import com.example.modaurbana.app.models.Producto
-import com.example.modaurbana.repository.ProductRepository
+import com.example.modaurbana.app.repository.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

@@ -30,6 +30,7 @@ data class ProductoResponse(
 data class ProductosResponse(
     val success: Boolean,
     val data: List<Producto>,
+    val message: String?,
     val total: Int
 )
 

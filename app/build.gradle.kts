@@ -9,6 +9,19 @@ android {
     namespace = "com.example.modaurbana.app"
     compileSdk = 36
 
+    packaging {
+        resources {
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/NOTICE.txt"
+            excludes += "META-INF/*.kotlin_module"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.modaurbana.app"
         minSdk = 24
@@ -90,7 +103,6 @@ dependencies {
     // Room (base de datos local)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    implementation(libs.firebase.appdistribution.gradle)
     ksp("androidx.room:room-compiler:2.6.1")
 
     // Coil (cargar imágenes)
