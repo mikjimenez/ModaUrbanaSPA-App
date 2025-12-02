@@ -23,6 +23,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        RetrofitClient.initialize(applicationContext)
         val sessionManager = SessionManager(applicationContext)
 
         setContent {

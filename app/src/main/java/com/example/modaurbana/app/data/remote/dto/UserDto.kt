@@ -5,11 +5,15 @@ import com.google.gson.annotations.SerializedName
 data class User(
     @SerializedName("_id")
     val id: String,
+
     val email: String,
     val role: String,
+    val nombre: String,
     val avatar: String? = null,
-    val isActive: Boolean,
-    val emailVerified: Boolean,
+    val telefono: String,
+    val isActive: Boolean?,
+    val direccion: String?,
+    val emailVerified: Boolean?,
     val createdAt: String? = null,
     val updatedAt: String? = null
 )

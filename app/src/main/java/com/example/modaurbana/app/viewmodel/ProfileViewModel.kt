@@ -308,6 +308,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
      * Obtiene el email para mostrar
      */
     fun getDisplayEmail(): String {
+        println(_uiState.value)
         return _uiState.value.email?.email
             ?: _uiState.value.user?.email
             ?: ""

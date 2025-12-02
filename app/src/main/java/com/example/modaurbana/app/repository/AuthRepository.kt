@@ -14,7 +14,7 @@ class AuthRepository(private val context: Context) {
     // Lazy init y protegido: si la inicialización falla, queda null en vez de lanzar
     private val apiService by lazy {
         try {
-            RetrofitClient.ApiService
+            RetrofitClient.apiService
         } catch (t: Throwable) {
             // Opcional: Log.e("AuthRepository", "ApiService init failed", t)
             null
@@ -73,8 +73,7 @@ class AuthRepository(private val context: Context) {
                         sm.saveUserData(
                             userId = authResponse.data.user.id,
                             email = authResponse.data.user.email,
-                            role = authResponse.data.user.role,
-                            name = nombre
+                            role = authResponse.data.user.role
                         )
                     } catch (t: Throwable) {
                         // No hacemos crash por fallo al salvar sesión, sólo lo reportamos en el resultado

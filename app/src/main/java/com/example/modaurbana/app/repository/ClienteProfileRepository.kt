@@ -9,7 +9,7 @@ import com.example.modaurbana.app.data.remote.dto.*
  */
 class ClienteProfileRepository(context: Context) {
 
-    private val apiService = RetrofitClient.ApiService
+    private val apiService = RetrofitClient.apiService
 
     /**
      * Obtiene el perfil del cliente autenticado

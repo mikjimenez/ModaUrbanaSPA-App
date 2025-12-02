@@ -10,7 +10,7 @@ class ProductRepository(
     private val session: SessionManager
 ) {
 
-    private val apiService = RetrofitClient.ApiService
+    private val apiService = RetrofitClient.apiService
 
     /**
      * Obtiene la lista de productos desde el backend.

@@ -13,7 +13,7 @@ import java.io.File
  */
 class CategoriaRepository(context: Context) {
 
-    private val apiService = RetrofitClient.ApiService
+    private val apiService = RetrofitClient.apiService
 
     /**
      * Obtiene todas las categorías

@@ -10,7 +10,7 @@ import com.example.modaurbana.app.data.remote.dto.*
  */
 class PedidoRepository(private val context: Context) {
 
-    private val apiService = RetrofitClient.ApiService
+    private val apiService = RetrofitClient.apiService
     private val sessionManager = SessionManager(context)
 
     /**
