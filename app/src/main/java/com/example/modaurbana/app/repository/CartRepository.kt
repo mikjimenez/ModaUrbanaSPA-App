@@ -19,7 +19,7 @@ class CartRepository(private val context: Context) {
      */
     suspend fun getAllCarritos(): Result<List<Carrito>> {
         return try {
-            val response = apiService.getCarritos()
+            val response = apiService!!.getCarritos()
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -36,7 +36,7 @@ class CartRepository(private val context: Context) {
      */
     suspend fun getCarritoById(id: String): Result<Carrito> {
         return try {
-            val response = apiService.getCarritoById(id)
+            val response = apiService!!.getCarritoById(id)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -56,7 +56,7 @@ class CartRepository(private val context: Context) {
             val clienteId = sessionManager.getUserId()
                 ?: return Result.failure(Exception("No hay sesión activa"))
 
-            val response = apiService.getCarritoByCliente(clienteId)
+            val response = apiService!!.getCarritoByCliente(clienteId)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -86,7 +86,7 @@ class CartRepository(private val context: Context) {
                 descripcion = "Carrito de compras"
             )
 
-            val response = apiService.createCarrito(request)
+            val response = apiService!!.createCarrito(request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -117,7 +117,7 @@ class CartRepository(private val context: Context) {
                 cantidad = cantidad
             )
 
-            val response = apiService.agregarItemCarrito(request)
+            val response = apiService!!.agregarItemCarrito(request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -137,7 +137,7 @@ class CartRepository(private val context: Context) {
             val clienteId = sessionManager.getUserId()
                 ?: return Result.failure(Exception("No hay sesión activa"))
 
-            val response = apiService.removerItemCarrito(clienteId, itemId)
+            val response = apiService!!.removerItemCarrito(clienteId, itemId)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.message)
@@ -163,7 +163,7 @@ class CartRepository(private val context: Context) {
                 descripcion = descripcion
             )
 
-            val response = apiService.updateCarrito(carritoId, request)
+            val response = apiService!!.updateCarrito(carritoId, request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -180,7 +180,7 @@ class CartRepository(private val context: Context) {
      */
     suspend fun deleteCarrito(carritoId: String): Result<String> {
         return try {
-            val response = apiService.deleteCarrito(carritoId)
+            val response = apiService!!.deleteCarrito(carritoId)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.message)
@@ -209,7 +209,7 @@ class CartRepository(private val context: Context) {
                 metodoPago = metodoPago
             )
 
-            val response = apiService.confirmarPedido(request)
+            val response = apiService!!.confirmarPedido(request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)

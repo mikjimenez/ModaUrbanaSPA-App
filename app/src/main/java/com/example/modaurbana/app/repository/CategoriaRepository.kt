@@ -20,7 +20,7 @@ class CategoriaRepository(context: Context) {
      */
     suspend fun getCategorias(): Result<List<Categoria>> {
         return try {
-            val response = apiService.getCategorias()
+            val response = apiService!!.getCategorias()
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -37,7 +37,7 @@ class CategoriaRepository(context: Context) {
      */
     suspend fun getCategoriaById(id: String): Result<Categoria> {
         return try {
-            val response = apiService.getCategoriaById(id)
+            val response = apiService!!.getCategoriaById(id)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -64,7 +64,7 @@ class CategoriaRepository(context: Context) {
                 imagen = imagen
             )
 
-            val response = apiService.createCategoria(request)
+            val response = apiService!!.createCategoria(request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -97,7 +97,7 @@ class CategoriaRepository(context: Context) {
                 imagen = imagen
             )
 
-            val response = apiService.updateCategoria(id, request)
+            val response = apiService!!.updateCategoria(id, request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -114,7 +114,7 @@ class CategoriaRepository(context: Context) {
      */
     suspend fun deleteCategoria(id: String): Result<String> {
         return try {
-            val response = apiService.deleteCategoria(id)
+            val response = apiService!!.deleteCategoria(id)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.message)
@@ -137,7 +137,7 @@ class CategoriaRepository(context: Context) {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val body = MultipartBody.Part.createFormData("file", imageFile.name, requestFile)
 
-            val response = apiService.uploadCategoriaImage(categoriaId, body)
+            val response = apiService!!.uploadCategoriaImage(categoriaId, body)
 
             if (response.isSuccessful && response.body() != null) {
                 val data = response.body()!!.data

@@ -19,7 +19,7 @@ class ProductRepository(
         // Solo para asegurar que haya sesión (el token real lo agrega el AuthInterceptor)
         session.getAuthToken() ?: error("No hay token guardado (usuario no logueado)")
 
-        val response = apiService.getProductos()
+        val response = apiService!!.getProductos()
 
         if (!response.isSuccessful) {
             throw IllegalStateException("Error HTTP al obtener productos: ${response.code()}")
@@ -41,7 +41,7 @@ class ProductRepository(
     suspend fun getProductoPorId(id: String): Producto = withContext(Dispatchers.IO) {
         session.getAuthToken() ?: error("No hay token guardado (usuario no logueado)")
 
-        val response = apiService.getProductoById(id)
+        val response = apiService!!.getProductoById(id)
 
         if (!response.isSuccessful) {
             throw IllegalStateException("Error HTTP al obtener producto: ${response.code()}")

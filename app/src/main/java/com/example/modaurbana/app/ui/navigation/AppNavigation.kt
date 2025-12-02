@@ -22,6 +22,7 @@ import com.example.modaurbana.app.viewmodel.ProfileViewModel
 import kotlinx.coroutines.launch
 
 // Rutas de navegación
+
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
@@ -106,29 +107,6 @@ fun AppNavigation(
                     )
         }
     ) {
-        // ==========================================
-        // PANTALLA DE LOGIN
-        // ==========================================
-        composable(Screen.Login.route) {
-            // Crear ViewModel específico para esta pantalla
-            val authViewModel: AuthViewModel = viewModel(
-                factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
-                    .getInstance(context.applicationContext as android.app.Application)
-            )
-
-            LoginScreen(
-                onNavigateToRegister = {
-                    navController.navigate(Screen.Register.route)
-                },
-                onLoginSuccess = {
-                    // Navegar a Home y limpiar el backstack
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                },
-                viewModel = authViewModel
-            )
-        }
 
         // ==========================================
         // PANTALLA DE REGISTRO
@@ -144,6 +122,30 @@ fun AppNavigation(
                     navController.popBackStack()
                 },
                 onRegisterSuccess = {
+                    // Navegar a Home y limpiar el backstack
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                viewModel = authViewModel
+            )
+        }
+
+        // ==========================================
+        // PANTALLA DE LOGIN
+        // ==========================================
+        composable(Screen.Login.route) {
+            // Crear ViewModel específico para esta pantalla
+            val authViewModel: AuthViewModel = viewModel(
+                factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
+                    .getInstance(context.applicationContext as android.app.Application)
+            )
+
+            LoginScreen(
+                onNavigateToRegister = {
+                    navController.navigate(Screen.Register.route)
+                },
+                onLoginSuccess = {
                     // Navegar a Home y limpiar el backstack
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }

@@ -18,7 +18,7 @@ class PedidoRepository(private val context: Context) {
      */
     suspend fun getAllPedidos(): Result<List<Pedido>> {
         return try {
-            val response = apiService.getPedidos()
+            val response = apiService!!.getPedidos()
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -35,7 +35,7 @@ class PedidoRepository(private val context: Context) {
      */
     suspend fun getPedidoById(id: String): Result<Pedido> {
         return try {
-            val response = apiService.getPedidoById(id)
+            val response = apiService!!.getPedidoById(id)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -65,7 +65,7 @@ class PedidoRepository(private val context: Context) {
                 notasEntrega = notasEntrega
             )
 
-            val response = apiService.createPedido(request)
+            val response = apiService!!.createPedido(request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -86,7 +86,7 @@ class PedidoRepository(private val context: Context) {
     ): Result<Pedido> {
         return try {
             val request = UpdatePedidoRequest(estado = estado)
-            val response = apiService.updatePedido(pedidoId, request)
+            val response = apiService!!.updatePedido(pedidoId, request)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.data)
@@ -103,7 +103,7 @@ class PedidoRepository(private val context: Context) {
      */
     suspend fun deletePedido(id: String): Result<String> {
         return try {
-            val response = apiService.deletePedido(id)
+            val response = apiService!!.deletePedido(id)
 
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!.message)

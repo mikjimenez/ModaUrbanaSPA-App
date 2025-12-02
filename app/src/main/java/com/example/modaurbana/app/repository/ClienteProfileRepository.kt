@@ -16,7 +16,7 @@ class ClienteProfileRepository(context: Context) {
      */
     suspend fun getMyProfile(): Result<ClienteProfile> {
         return try {
-            val response = apiService.getMyProfile()
+            val response = apiService!!.getMyProfile()
 
             if (response.isSuccessful && response.body() != null) {
                 // Retornar directamente el DTO
@@ -48,7 +48,7 @@ class ClienteProfileRepository(context: Context) {
                 preferencias = preferencias
             )
 
-            val response = apiService.updateMyProfile(request)
+            val response = apiService!!.updateMyProfile(request)
 
             if (response.isSuccessful && response.body() != null) {
                 // Retornar directamente el DTO

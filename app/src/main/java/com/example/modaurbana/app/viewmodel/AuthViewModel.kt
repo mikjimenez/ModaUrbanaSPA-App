@@ -18,7 +18,15 @@ data class AuthUiState(
 )
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = AuthRepository(application)
+    // crear el repo lazy para evitar que su constructor se ejecute durante la creación del VM
+    private val repository: AuthRepository? by lazy {
+        try {
+            AuthRepository(application)
+        } catch (t: Throwable) {
+            // Log si quieres: Log.e("AuthViewModel", "Repo init failed", t)
+            null
+        }
+    }
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
@@ -59,30 +67,48 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         viewModelScope.launch {
-            val result = repository.register(
-                nombre = name,
-                email = email,
-                password = password,
-                telefono = telefono,
-                direccion = direccion
-            )
+            val repo = repository
+            if (repo == null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    error = "Error interno: no se pudo inicializar AuthRepository"
+                )
+                return@launch
+            }
 
-            _uiState.value = result.fold(
-                onSuccess = {
-                    _uiState.value.copy(
-                        isLoading = false,
-                        isSuccess = true,
-                        error = null
-                    )
-                },
-                onFailure = { exception ->
-                    _uiState.value.copy(
-                        isLoading = false,
-                        isSuccess = false,
-                        error = exception.message ?: "Error al registrar"
-                    )
-                }
-            )
+            try {
+                val result = repo.register(
+                    nombre = name,
+                    email = email,
+                    password = password,
+                    telefono = telefono,
+                    direccion = direccion
+                )
+
+                _uiState.value = result.fold(
+                    onSuccess = {
+                        _uiState.value.copy(
+                            isLoading = false,
+                            isSuccess = true,
+                            error = null
+                        )
+                    },
+                    onFailure = { exception ->
+                        _uiState.value.copy(
+                            isLoading = false,
+                            isSuccess = false,
+                            error = exception.message ?: "Error al registrar"
+                        )
+                    }
+                )
+            } catch (t: Throwable) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    error = t.message ?: "Error inesperado durante registro"
+                )
+            }
         }
     }
 
@@ -103,24 +129,42 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         viewModelScope.launch {
-            val result = repository.login(email, password)
+            val repo = repository
+            if (repo == null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    error = "Error interno: no se pudo inicializar AuthRepository"
+                )
+                return@launch
+            }
 
-            _uiState.value = result.fold(
-                onSuccess = {
-                    _uiState.value.copy(
-                        isLoading = false,
-                        isSuccess = true,
-                        error = null
-                    )
-                },
-                onFailure = { exception ->
-                    _uiState.value.copy(
-                        isLoading = false,
-                        isSuccess = false,
-                        error = exception.message ?: "Error al iniciar sesión"
-                    )
-                }
-            )
+            try {
+                val result = repo.login(email, password)
+
+                _uiState.value = result.fold(
+                    onSuccess = {
+                        _uiState.value.copy(
+                            isLoading = false,
+                            isSuccess = true,
+                            error = null
+                        )
+                    },
+                    onFailure = { exception ->
+                        _uiState.value.copy(
+                            isLoading = false,
+                            isSuccess = false,
+                            error = exception.message ?: "Error al iniciar sesión"
+                        )
+                    }
+                )
+            } catch (t: Throwable) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    error = t.message ?: "Error inesperado durante login"
+                )
+            }
         }
     }
 
