@@ -108,23 +108,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Filtros de categoría (opcional - puedes implementarlo después)
-            // Por ahora lo comento porque no tienes filtro por categoría en el ViewModel
-            /*
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(categories) { category ->
-                    FilterChip(
-                        selected = false, // Implementar lógica de filtro
-                        onClick = { /* Implementar filtro por categoría */ },
-                        label = { Text(category) }
-                    )
-                }
-            }
-            */
-
             // LOADER
             if (productState.isLoading) {
                 Box(
