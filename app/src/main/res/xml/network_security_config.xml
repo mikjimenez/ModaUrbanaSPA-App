@@ -10,7 +10,6 @@
     <!-- Configuración específica para Render.com -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">modaurbana-api-sw96.onrender.com</domain>
-        <domain inclideSubdomains="true">www.inkvasion.cl</domain>
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />
