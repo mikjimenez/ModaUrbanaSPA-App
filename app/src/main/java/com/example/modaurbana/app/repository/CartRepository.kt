@@ -17,7 +17,7 @@ class CartRepository(private val context: Context) {
     /**
      * Obtiene todos los carritos (ADMIN)
      */
-    suspend fun getAllCarritos(): Result<List<Carrito>> {
+    suspend fun getAllCarritos(): Result<List<CarritoItem>> {
         return try {
             val response = apiService!!.getCarritos()
 

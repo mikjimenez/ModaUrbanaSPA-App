@@ -67,7 +67,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
      * Agrega un producto al carrito
      */
     fun addToCart(
-        productoId: String,
+        producto: String,
         talla: String?,
         cantidad: Int = 1
     ) {
@@ -78,7 +78,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             val result = repository.agregarItemCarrito(
-                productoId = productoId,
+                productoId = producto,
                 talla = talla,
                 cantidad = cantidad
             )

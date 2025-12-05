@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.modaurbana.app.data.local.SessionManager
+import com.example.modaurbana.app.data.remote.dto.ProductoDto
 import com.example.modaurbana.app.models.Producto
 import com.example.modaurbana.app.repository.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +33,7 @@ class ProductViewModel(app: Application) : AndroidViewModel(app) {
                 )
 
                 val productos = repo.getProductos()
+                println(productos)
                 _ui.value = _ui.value.copy(
                     isLoading = false,
                     productos = productos,
@@ -64,18 +66,19 @@ class ProductViewModel(app: Application) : AndroidViewModel(app) {
 
 data class ProductListUiState(
     val isLoading: Boolean = false,
-    val productos: List<Producto> = emptyList(),
+    val productos: List<ProductoDto> = emptyList(),
     val error: String? = null,
 
     val tallasDisponibles: List<String> = emptyList(),
     val materialesDisponibles: List<String> = emptyList(),
     val estilosDisponibles: List<String> = emptyList(),
 
+
     val tallaSeleccionada: String? = null,
     val materialSeleccionado: String? = null,
     val estiloSeleccionado: String? = null
 ) {
-    val productosFiltrados: List<Producto>
+    val productosFiltrados: List<ProductoDto>
         get() = productos.filter { p ->
             (tallaSeleccionada == null || p.talla == tallaSeleccionada) &&
                     (materialSeleccionado == null || p.material == materialSeleccionado) &&

@@ -28,7 +28,7 @@ data class CarritoResponse(
 
 data class CarritosResponse(
     val success: Boolean,
-    val data: List<Carrito>,
+    val data: List<CarritoItem>,
     val total: Int
 )
 

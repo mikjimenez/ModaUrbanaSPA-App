@@ -7,15 +7,15 @@ data class ProductoDto(
     @SerializedName("_id")
     val id: String,
     val nombre: String,
-    val talla: String? = null,
-    val material: String? = null,
-    val estilo: String? = null,
-    val descripcion: String? = null,
+    val talla: String,
+    val material: String,
+    val estilo: String,
+    val descripcion: String,
     val color: String? = null,
     val precio: Double,
-    val stock: Int? = null,
-    val categoria: String? = null,
-    val imagen: String? = null,
+    val stock: Int,
+    val categoria: Categoria,
+    val imagen: String,
     val imagenThumbnail: String? = null,
     val createdAt: String? = null,
     val updatedAt: String? = null
@@ -29,7 +29,7 @@ data class ProductoResponse(
 
 data class ProductosResponse(
     val success: Boolean,
-    val data: List<Producto>,
+    val data: List<ProductoDto>,
     val message: String?,
     val total: Int
 )
@@ -42,7 +42,7 @@ data class CreateProductoRequest(
     val color: String? = null,
     val precio: Double,
     val stock: Int? = null,
-    val categoria: String,
+    val categoria: Categoria,
     val imagen: String? = null,
     val imagenThumbnail: String? = null
 )
@@ -55,7 +55,7 @@ data class UpdateProductoRequest(
     val color: String? = null,
     val precio: Double? = null,
     val stock: Int? = null,
-    val categoria: String? = null,
+    val categoria: Categoria,
     val imagen: String? = null,
     val imagenThumbnail: String? = null
 )
@@ -76,5 +76,6 @@ fun ProductoDto.toDomain(): Producto = Producto(
     categoria = categoria,
     stock = stock,
     createdAt = createdAt,
-    updatedAt = updatedAt
+    updatedAt = updatedAt,
+    color = color,
 )

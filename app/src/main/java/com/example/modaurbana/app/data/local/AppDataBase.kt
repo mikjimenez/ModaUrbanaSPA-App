@@ -280,7 +280,6 @@ abstract class AppDatabase : RoomDatabase() {
                     description = "Polerón rojo con costuras grandes decorativas. Diseño Nube con detalles bold stitch."
                 )
             )
-
             productDao.insertProducts(products)
         }
     }
